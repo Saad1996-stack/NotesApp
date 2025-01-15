@@ -1,8 +1,19 @@
+import 'package:notes_app/note_model.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-class DBHelper {
+class DBHelper
+{
+  ///Table Name
+  static const String TABLE_NOTE = "note";
+
+  ///
+  static const String COLUMN_NOTE_ID = "note_id";
+  static const String COLUMN_NOTE_TITLE = "note_title";
+  static const String COLUMN_NOTE_DATE = "note_date";
+  static const String COLUMN_NOTE_DESC = "note_desc";
+
   DBHelper._();
   static DBHelper getInstance() => DBHelper._();
 
@@ -18,47 +29,42 @@ class DBHelper {
 
     return await openDatabase(dbPath, version: 1, onCreate: (db, version) {
       db.execute(
-          "create table note ( note_id integer primary key autoincrement, note_title text, note_desc text, note_date text)");
+          "create table note ( $COLUMN_NOTE_ID integer primary key autoincrement, $COLUMN_NOTE_TITLE text, $COLUMN_NOTE_DESC text, $COLUMN_NOTE_DATE text)");
     });
   }
 
-  Future<bool> addNote(
-      {required String title, String desc = "", required String date}) async {
+  Future<bool>addNote({required NoteModel newNote})
+  async {
     var db = await getDB();
-    int rowsEffected = await db.insert("note", {
-      "note_title": title,
-      "note_desc": desc,
-      "note_date": date,
-    });
+    int rowsEffected = await db.insert(TABLE_NOTE, newNote.toMap());
     return rowsEffected > 0;
   }
 
-  Future<List<Map<String, dynamic>>> fetchAllNotes() async {
+  Future<List<NoteModel>>fetchAllNotes() async {
     var db = await getDB();
-    List<Map<String, dynamic>> mData = await db.query("note");
-    return mData;
+    List<Map<String, dynamic>> mData = await db.query(TABLE_NOTE);
+    List<NoteModel> mNotes = [];
+
+    for(int i=0; i<mData.length; i++)
+      {
+        NoteModel eachNote = NoteModel.fromMap(mData[i]);
+        mNotes.add(eachNote);
+      }
+    return mNotes;
   }
 
   Future<bool> updateNote(
-      {required String updateTitle,
-      required String updateDesc,
-      required String updateDate,
-      required int id}) async {
+      {required NoteModel updateNote}) async {
     var db = await getDB();
     int rowsEffected = await db.update(
-        "note",
-        {
-          "note_title": updateTitle,
-          "note_desc": updateDesc,
-          "note_date": updateDate,
-        },
-        where: "note_id = $id");
+        TABLE_NOTE,updateNote.toMap(),
+        where: "$COLUMN_NOTE_ID = ${updateNote.id}",);
     return rowsEffected > 0;
   }
 
   Future<bool> deleteNote({required int id}) async {
     var db = await getDB();
-    int rowsEffectecd = await db.delete("note", where: "note_id = $id");
+    int rowsEffectecd = await db.delete(TABLE_NOTE, where: "$COLUMN_NOTE_ID = $id");
     return rowsEffectecd > 0;
   }
 }

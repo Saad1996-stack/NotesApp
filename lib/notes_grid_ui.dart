@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:notes_app/db_helper.dart';
+import 'package:notes_app/note_model.dart';
 import 'package:notes_app/title_desc.dart';
 
 class notesUi extends StatefulWidget
@@ -15,7 +16,7 @@ class _notesUiState extends State<notesUi>
   TextEditingController noteTitleController = TextEditingController();
   TextEditingController noteDateController  = TextEditingController();
 
-  List<Map<String,dynamic>>mNotes = [];
+  List<NoteModel>mNotes = [];
   DBHelper dbHelper = DBHelper.getInstance();
 
 
@@ -82,7 +83,7 @@ class _notesUiState extends State<notesUi>
                         return InkWell(
                           onTap: ()
                           {
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>titleDesc(noteId: mNotes[index]["note_id"])));
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>titleDesc(noteId: mNotes[index].id)));
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -94,13 +95,13 @@ class _notesUiState extends State<notesUi>
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(mNotes[index]["note_title"],style: TextStyle(fontSize: 20),),
-                                  Text(mNotes[index]["note_date"],style: TextStyle(fontSize: 20,color: Colors.black45),),
+                                  Text(mNotes[index].title,style: TextStyle(fontSize: 20),overflow: TextOverflow.ellipsis,),
+                                  Text(mNotes[index].date,style: TextStyle(fontSize: 20,color: Colors.black45),),
                                   Padding(
                                     padding: EdgeInsets.only(top: 60,left: 150),
                                     child: IconButton(onPressed: ()
                                     async{
-                                      bool check = await dbHelper.deleteNote(id: mNotes[index]["note_id"]);
+                                      bool check = await dbHelper.deleteNote(id: mNotes[index].id);
                                       if(check)
                                         {
                                           getNotes();
@@ -188,7 +189,7 @@ class _notesUiState extends State<notesUi>
                             OutlinedButton(
                               onPressed: ()
                               async{
-                                bool check = await dbHelper.addNote(title: noteTitleController.text, date: noteDateController.text);
+                                bool check = await dbHelper.addNote(newNote: NoteModel(title: noteTitleController.text, date: noteDateController.text));
                                 if(check)
                                   {
                                     getNotes();

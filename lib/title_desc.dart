@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notes_app/db_helper.dart';
-
+import 'package:notes_app/note_model.dart';
 import 'notes_grid_ui.dart';
 
 class titleDesc extends StatefulWidget
@@ -24,12 +24,18 @@ class _titleDescState extends State<titleDesc>
   getNotes() async {
     var db = await dbHelper.getDB();
     var noteData = await db.query(
-      "note",
-      where: "note_id = ?",
+      DBHelper.TABLE_NOTE,
+      where: "${DBHelper.COLUMN_NOTE_ID} = ?",
       whereArgs: [widget.noteId],
     );
     if (noteData.isNotEmpty) {
-      mNotes = noteData;
+      mNotes = noteData.map((note)=> NoteModel.fromMap(note)).toList();
+      // if(mNotes.isNotEmpty)
+      // {
+      //   updateNoteTitleController.text = mNotes[0].title;
+      //   updateNoteDateController.text  = mNotes[0].date;
+      //   updateNoteDescController.text  = mNotes[0].desc;
+      // }
     }
     setState(() {});
   }
@@ -38,7 +44,7 @@ class _titleDescState extends State<titleDesc>
   TextEditingController updateNoteDateController  = TextEditingController();
   TextEditingController updateNoteDescController  = TextEditingController();
 
-  List<Map<String,dynamic>>mNotes = [];
+  List<NoteModel>mNotes = [];
   DBHelper dbHelper = DBHelper.getInstance();
 
   @override
@@ -90,17 +96,18 @@ class _titleDescState extends State<titleDesc>
                   itemCount: mNotes.length,
                     itemBuilder: (context,index){
                       return ListTile(
-                        title: Text(mNotes[index]["note_title"],style: TextStyle(fontSize: 28,fontWeight: FontWeight.w900,color: Colors.white),),
+                        title: Text(mNotes[index].title,
+                          style: TextStyle(fontSize: 28,fontWeight: FontWeight.w900,color: Colors.white,)),
                         subtitle: Padding(
                           padding: EdgeInsets.only(top: 20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(mNotes[index]["note_date"],style: TextStyle(fontSize: 20,color: Colors.white),),
+                              Text(mNotes[index].date,style: TextStyle(fontSize: 20,color: Colors.white),),
                               SizedBox(
                                 height: 15,
                               ),
-                              Text(mNotes[index]["note_desc"],style: TextStyle(fontSize: 20,color: Colors.white),),
+                              Text(mNotes[index].desc,style: TextStyle(fontSize: 20,color: Colors.white),),
                             ],
                           ),
                         ),
@@ -117,9 +124,9 @@ class _titleDescState extends State<titleDesc>
 
             if(mNotes.isNotEmpty)
               {
-                updateNoteTitleController.text = mNotes[0]["note_title"];
-                updateNoteDateController.text  = mNotes[0]["note_date"];
-                updateNoteDescController.text  = mNotes[0]["note_desc"];
+                updateNoteTitleController.text = mNotes[0].title;
+                updateNoteDateController.text  = mNotes[0].date;
+                updateNoteDescController.text  = mNotes[0].desc;
               }
 
             showModalBottomSheet(
@@ -210,7 +217,8 @@ class _titleDescState extends State<titleDesc>
                             OutlinedButton(
                               onPressed: ()
                               async{
-                                bool check = await dbHelper.updateNote(updateTitle: updateNoteTitleController.text, updateDate: updateNoteDateController.text, updateDesc: updateNoteDescController.text, id: mNotes[0]["note_id"]);
+                                // bool check = await dbHelper.updateNote(updateTitle: updateNoteTitleController.text, updateDate: updateNoteDateController.text, updateDesc: updateNoteDescController.text, id: mNotes[0].id);
+                                bool check = await dbHelper.updateNote(updateNote: NoteModel(title: updateNoteTitleController.text, date: updateNoteDateController.text, desc: updateNoteDescController.text, id: mNotes[0].id));
                                 if(check)
                                 {
                                   getNotes();
