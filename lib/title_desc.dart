@@ -30,12 +30,6 @@ class _titleDescState extends State<titleDesc>
     );
     if (noteData.isNotEmpty) {
       mNotes = noteData.map((note)=> NoteModel.fromMap(note)).toList();
-      // if(mNotes.isNotEmpty)
-      // {
-      //   updateNoteTitleController.text = mNotes[0].title;
-      //   updateNoteDateController.text  = mNotes[0].date;
-      //   updateNoteDescController.text  = mNotes[0].desc;
-      // }
     }
     setState(() {});
   }
