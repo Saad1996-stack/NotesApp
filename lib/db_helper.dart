@@ -8,7 +8,7 @@ class DBHelper
   ///Table Name
   static const String TABLE_NOTE = "note";
 
-  ///
+  ///Column Names
   static const String COLUMN_NOTE_ID = "note_id";
   static const String COLUMN_NOTE_TITLE = "note_title";
   static const String COLUMN_NOTE_DATE = "note_date";
@@ -29,7 +29,7 @@ class DBHelper
 
     return await openDatabase(dbPath, version: 1, onCreate: (db, version) {
       db.execute(
-          "create table note ( $COLUMN_NOTE_ID integer primary key autoincrement, $COLUMN_NOTE_TITLE text, $COLUMN_NOTE_DESC text, $COLUMN_NOTE_DATE text)");
+          "create table $TABLE_NOTE note ( $COLUMN_NOTE_ID integer primary key autoincrement, $COLUMN_NOTE_TITLE text, $COLUMN_NOTE_DESC text, $COLUMN_NOTE_DATE text)");
     });
   }
 

@@ -15,10 +15,10 @@ class NoteModel
   factory NoteModel.fromMap(Map<String,dynamic>map)
   {
     return NoteModel(
-        id: map[DBHelper.COLUMN_NOTE_ID],
-        title: map[DBHelper.COLUMN_NOTE_TITLE],
-        date: map[DBHelper.COLUMN_NOTE_DATE],
-        desc: map[DBHelper.COLUMN_NOTE_DESC],
+      id: map[DBHelper.COLUMN_NOTE_ID],
+      title: map[DBHelper.COLUMN_NOTE_TITLE],
+      date: map[DBHelper.COLUMN_NOTE_DATE],
+      desc: map[DBHelper.COLUMN_NOTE_DESC],
     );
   }
 
@@ -27,11 +27,11 @@ class NoteModel
   Map<String,dynamic>toMap()
   {
     return
-        {
-          DBHelper.COLUMN_NOTE_TITLE : title,
-          DBHelper.COLUMN_NOTE_DATE  : date,
-          DBHelper.COLUMN_NOTE_DESC  : desc,
-        };
+      {
+        DBHelper.COLUMN_NOTE_TITLE : title,
+        DBHelper.COLUMN_NOTE_DATE  : date,
+        DBHelper.COLUMN_NOTE_DESC  : desc,
+      };
   }
 
 }
