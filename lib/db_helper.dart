@@ -28,8 +28,7 @@ class DBHelper
     String dbPath = join(appDir.path, "mainDB.db");
 
     return await openDatabase(dbPath, version: 1, onCreate: (db, version) {
-      db.execute(
-          "create table $TABLE_NOTE note ( $COLUMN_NOTE_ID integer primary key autoincrement, $COLUMN_NOTE_TITLE text, $COLUMN_NOTE_DESC text, $COLUMN_NOTE_DATE text)");
+      db.execute("create table $TABLE_NOTE ( $COLUMN_NOTE_ID integer primary key autoincrement, $COLUMN_NOTE_TITLE text, $COLUMN_NOTE_DESC text, $COLUMN_NOTE_DATE text)");
     });
   }
 
