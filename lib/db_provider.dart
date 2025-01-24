@@ -11,7 +11,7 @@ class DBProvider extends ChangeNotifier
 
   List<NoteModel>getAllNotes() => _mNotes;
 
-  void addNote({required NoteModel mNote})
+  Future<void>addNote({required NoteModel mNote})
   async{
     bool check = await dbHelper.addNote(newNote: mNote);
     if(check)
@@ -21,7 +21,7 @@ class DBProvider extends ChangeNotifier
       }
   }
 
-  void fetchInitialNotes()
+  Future<void> fetchInitialNotes()
   async{
     _mNotes = await dbHelper.fetchAllNotes();
     notifyListeners();
@@ -37,7 +37,7 @@ class DBProvider extends ChangeNotifier
       }
   }
 
-  void deleteNote({required int noteId})
+  Future<void> deleteNote({required int noteId})
   async{
     bool check = await dbHelper.deleteNote(id: noteId);
     if(check)

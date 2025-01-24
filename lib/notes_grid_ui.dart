@@ -109,7 +109,7 @@ class _notesUiState extends State<notesUi>
                                       child: IconButton(onPressed: ()
                                       async{
                                         ///provider
-                                        context.read<DBProvider>().deleteNote(noteId: mNotes[index].id);
+                                        await context.read<DBProvider>().deleteNote(noteId: mNotes[index].id);
                                         ///data base
                                         /*bool check = await dbHelper.deleteNote(id: mNotes[index].id);
                                       if(check)
@@ -203,7 +203,7 @@ class _notesUiState extends State<notesUi>
                               onPressed: ()
                               async{
                                 ///2nd Way for use Provider
-                                context.read<DBProvider>().addNote(mNote: NoteModel(title: noteTitleController.text, date: noteDateController.text));
+                                await context.read<DBProvider>().addNote(mNote: NoteModel(title: noteTitleController.text, date: noteDateController.text));
                                 Navigator.pop(context);
                                 ///1st Way for use Provider
                                 //Provider.of<DBProvider>(context).addNote(mNote: NoteModel(title: noteTitleController.text, date: noteDateController.text));
