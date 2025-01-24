@@ -1,45 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:notes_app/db_helper.dart';
 import 'package:notes_app/note_model.dart';
-import 'notes_grid_ui.dart';
+import 'package:provider/provider.dart';
+import 'db_provider.dart';
 
-class titleDesc extends StatefulWidget
-{
-  final int noteId;
-  titleDesc({required this.noteId});
+class titleDesc extends StatefulWidget {
+  final int note; // Selected Note ID
+  titleDesc({required this.note});
 
   @override
   State<titleDesc> createState() => _titleDescState();
 }
 
-class _titleDescState extends State<titleDesc>
-{
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    getNotes();
-  }
-
-  getNotes() async {
-    var db = await dbHelper.getDB();
-    var noteData = await db.query(
-      DBHelper.TABLE_NOTE,
-      where: "${DBHelper.COLUMN_NOTE_ID} = ?",
-      whereArgs: [widget.noteId],
-    );
-    if (noteData.isNotEmpty) {
-      mNotes = noteData.map((note)=> NoteModel.fromMap(note)).toList();
-    }
-    setState(() {});
-  }
-
+class _titleDescState extends State<titleDesc> {
   TextEditingController updateNoteTitleController = TextEditingController();
-  TextEditingController updateNoteDateController  = TextEditingController();
-  TextEditingController updateNoteDescController  = TextEditingController();
-
-  List<NoteModel>mNotes = [];
-  DBHelper dbHelper = DBHelper.getInstance();
+  TextEditingController updateNoteDateController = TextEditingController();
+  TextEditingController updateNoteDescController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +23,10 @@ class _titleDescState extends State<titleDesc>
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          color: Color(0xff252525),
+          color: const Color(0xff252525),
           child: Column(
             children: [
+              // App Bar
               Expanded(
                 flex: 2,
                 child: Padding(
@@ -58,185 +34,191 @@ class _titleDescState extends State<titleDesc>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // Back Button
                       Container(
                         height: 60,
                         width: 60,
                         decoration: BoxDecoration(
-                          color: Color(0xff3B3B3B),
+                          color: const Color(0xff3B3B3B),
                           borderRadius: BorderRadius.circular(15),
                         ),
-                          child: IconButton(onPressed: ()
-                          {
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>notesUi()));
+                        child: IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
                           },
-                              icon: Icon(Icons.arrow_back_ios_new,color: Colors.white,))),
-
+                          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                        ),
+                      ),
+                      // Save Button
                       Container(
                         height: 70,
-                            width: 100,
-                            decoration: BoxDecoration(
-                              color: Color(0xff3B3B3B),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                        child: Center(child: Text("Save",style: TextStyle(fontSize: 25,color: Colors.white),)),
-                          ),
+                        width: 100,
+                        decoration: BoxDecoration(
+                          color: const Color(0xff3B3B3B),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: const Center(
+                          child: Text("Save", style: TextStyle(fontSize: 25, color: Colors.white)),
+                        ),
+                      ),
                     ],
                   ),
-                )
+                ),
               ),
+              // Note Details
               Expanded(
                 flex: 15,
-                child: mNotes.isNotEmpty ? ListView.builder(
-                  itemCount: mNotes.length,
-                    itemBuilder: (context,index){
-                      return ListTile(
-                        title: Text(mNotes[index].title,
-                          style: TextStyle(fontSize: 28,fontWeight: FontWeight.w900,color: Colors.white,)),
-                        subtitle: Padding(
-                          padding: EdgeInsets.only(top: 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(mNotes[index].date,style: TextStyle(fontSize: 20,color: Colors.white),),
-                              SizedBox(
-                                height: 15,
-                              ),
-                              Text(mNotes[index].desc,style: TextStyle(fontSize: 20,color: Colors.white),),
-                            ],
+                child: Consumer<DBProvider>(
+                  builder: (ctx, provider, child) {
+                    // Filter selected note
+                    final selectedNote = provider.getAllNotes().firstWhere(
+                          (note) => note.id == widget.note,
+                      orElse: () => NoteModel(id: 0, title: "N/A", date: "N/A", desc: "No Data"),
+                    );
+
+                    return ListView(
+                      padding: const EdgeInsets.all(16.0),
+                      children: [
+                        // Title
+                        Text(
+                          selectedNote.title,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
                           ),
                         ),
-                      );
-                    },
-                    )
-                    : Center(child: Text("No Notes Available",style: TextStyle(fontWeight: FontWeight.w900,fontSize: 20,color: Colors.white),))
+                        const SizedBox(height: 20),
+                        // Date
+                        Text(
+                          selectedNote.date,
+                          style: const TextStyle(fontSize: 20, color: Colors.white),
+                        ),
+                        const SizedBox(height: 15),
+                        // Description
+                        Text(
+                          selectedNote.desc,
+                          style: const TextStyle(fontSize: 20, color: Colors.white),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ],
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: (){
+          onPressed: () {
+            final provider = context.read<DBProvider>();
+            final selectedNote = provider.getAllNotes().firstWhere(
+                  (note) => note.id == widget.note,
+              orElse: () => NoteModel(id: 0, title: "", date: "", desc: ""),
+            );
 
-            if(mNotes.isNotEmpty)
-              {
-                updateNoteTitleController.text = mNotes[0].title;
-                updateNoteDateController.text  = mNotes[0].date;
-                updateNoteDescController.text  = mNotes[0].desc;
-              }
+            // Pre-fill update controllers
+            updateNoteTitleController.text = selectedNote.title;
+            updateNoteDateController.text = selectedNote.date;
+            updateNoteDescController.text = selectedNote.desc;
 
             showModalBottomSheet(
-                isScrollControlled: true,
-                context: context,
-                builder: (_){
-                  return Container(
-                    height: 800,
-                    width: double.infinity,
-                    child: Column(
-                      children: [
-                        Text("Note Update",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w900),),
-                        SizedBox(
-                          height: 11,
-                        ),
-                        SizedBox(
-                          width: 400,
-                          child: TextField(
-                            controller: updateNoteTitleController,
-                            minLines: 4,
-                            maxLines: 5,
-                            keyboardType: TextInputType.text,
-                            decoration: InputDecoration(
-                              label: Text("Title"),
-                              hintText: "Title",
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+              isScrollControlled: true,
+              context: context,
+              builder: (_) {
+                return Container(
+                  height: 800,
+                  width: double.infinity,
+                  child: Column(
+                    children: [
+                      const Text("Note Update", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                      const SizedBox(height: 11),
+                      // Title Field
+                      SizedBox(
+                        width: 400,
+                        child: TextField(
+                          controller: updateNoteTitleController,
+                          decoration: InputDecoration(
+                            label: const Text("Title"),
+                            hintText: "Title",
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
                             ),
                           ),
                         ),
-                        SizedBox(
-                          height: 10,
-                        ),
-
-                        SizedBox(
-                          width: 400,
-                          child: TextField(
-                            controller: updateNoteDateController,
-                            keyboardType: TextInputType.text,
-                            decoration: InputDecoration(
-                              label: Text("Date"),
-                              hintText: "Month Date, Year",
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+                      ),
+                      const SizedBox(height: 10),
+                      // Date Field
+                      SizedBox(
+                        width: 400,
+                        child: TextField(
+                          controller: updateNoteDateController,
+                          decoration: InputDecoration(
+                            label: const Text("Date"),
+                            hintText: "Month Date, Year",
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
                             ),
                           ),
                         ),
-
-                        SizedBox(
-                          height: 10,
-                        ),
-
-                        SizedBox(
-                          width: 400,
-                          child: TextField(
-                            minLines: 6,
-                            maxLines: 8,
-                            controller: updateNoteDescController,
-                            keyboardType: TextInputType.text,
-                            decoration: InputDecoration(
-                              label: Text("Description"),
-                              hintText: "Description",
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+                      ),
+                      const SizedBox(height: 10),
+                      // Description Field
+                      SizedBox(
+                        width: 400,
+                        child: TextField(
+                          controller: updateNoteDescController,
+                          maxLines: 5,
+                          decoration: InputDecoration(
+                            label: const Text("Description"),
+                            hintText: "Description",
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
                             ),
                           ),
                         ),
-
-                        SizedBox(
-                          height: 10,
-                        ),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            OutlinedButton(
-                              onPressed: ()
-                              async{
-                                // bool check = await dbHelper.updateNote(updateTitle: updateNoteTitleController.text, updateDate: updateNoteDateController.text, updateDesc: updateNoteDescController.text, id: mNotes[0].id);
-                                bool check = await dbHelper.updateNote(updateNote: NoteModel(title: updateNoteTitleController.text, date: updateNoteDateController.text, desc: updateNoteDescController.text, id: mNotes[0].id));
-                                if(check)
-                                {
-                                  getNotes();
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: Text("Update"),
-                            ),
-
-                            OutlinedButton(
-                              onPressed: ()
-                              {
-                                Navigator.pop(context);
-                              },
-                              child: Text("Cancel"),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                });
+                      ),
+                      const SizedBox(height: 10),
+                      // Action Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          OutlinedButton(
+                            onPressed: () async {
+                              final updatedNote = NoteModel(
+                                id: selectedNote.id,
+                                title: updateNoteTitleController.text,
+                                date: updateNoteDateController.text,
+                                desc: updateNoteDescController.text,
+                              );
+                               await provider.updateNote(mNote: updatedNote);
+                              Navigator.pop(context);
+                            },
+                            child: const Text("Update"),
+                          ),
+                          OutlinedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text("Cancel"),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
           },
-          child: Icon(Icons.edit),
+          child: const Icon(Icons.edit),
         ),
       ),
     );

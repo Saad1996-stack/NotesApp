@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:notes_app/db_helper.dart';
+import 'package:notes_app/db_provider.dart';
 import 'package:notes_app/title_desc.dart';
+import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 
 import 'notes_grid_ui.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+      create: (context)=>DBProvider(dbHelper: DBHelper.getInstance()),
+      child: MyApp(),)
+  );
 }
 
 class MyApp extends StatelessWidget {
